@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  username String @unique
+  password String
+  roles    Role[] @default([USER])
+
+  createdProducts Product[] @relation("ProductCreated")
+  updatedProducts Product[] @relation("ProductUpdated")
+
+  orders Order[] @relation("OrderedCreated")
+  carts  Cart[]  @relation("CartCreated")
+
+  createdCategory Category[] @relation("CategoryCreated")
+  updatedCategory Category[] @relation("CategoryUpdated")
+}
+
+model Product {
+  id                 String @id @default(uuid())
+  productName        String
+  productDescription String
+  productStock       Float
+  productPrice       Float
+
+  category   Category @relation(name: "CategoryProduct", fields: [categoryId], references: [id])
+  categoryId String
+
+  createdByUser User   @relation(name: "ProductCreated", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  createdBy     String
+  updatedByUser User   @relation(name: "ProductUpdated", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  updatedBy     String
+
+  carted Cart[] @relation("CartProduct")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id           String @id @default(uuid())
+  categoryName String @unique
+
+  product Product[] @relation(name: "CategoryProduct")
+  // ProductId String?
+
+  createdByUser User   @relation(name: "CategoryCreated", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  createdBy     String
+  updatedByUser User   @relation(name: "CategoryUpdated", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  updatedBy     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id     String @id @default(uuid())
+  status String @default("Pending")
+
+  orderBy   User   @relation(name: "OrderedCreated", fields: [orderedBy], references: [id])
+  orderedBy String
+
+  // orderedProductList Cart[]
+  orderedProducts Cart[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id       String  @id @default(uuid())
+  quantity Int
+  subTotal Float
+  status   Boolean @default(false)
+
+  createdByUser User   @relation(name: "CartCreated", fields: [cartedBy], references: [id])
+  cartedBy      String
+
+  productList Product @relation(name: "CartProduct", fields: [product], references: [id])
+  product     String
+
+  // ordered Order[]
+  orderedInfo Order?  @relation(fields: [order], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  order       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
