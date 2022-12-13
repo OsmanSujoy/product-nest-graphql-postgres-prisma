@@ -1,5 +1,5 @@
 {
-  "name": "book-nest-graphql-postgres-prisma",
+  "name": "product-nest-graphql-postgres-prisma",
   "version": "0.0.1",
   "description": "A Project using Nestjs, GraphQL, Postgres & Prisma",
   "author": "Md Osman Gani Sujoy",
